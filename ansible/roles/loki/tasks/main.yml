@@ -1,0 +1,91 @@
+---
+- name: Loki Systemgruppe erstellen
+  ansible.builtin.group:
+    name: loki
+    system: true
+
+- name: Loki Systembenutzer erstellen
+  ansible.builtin.user:
+    name: loki
+    system: true
+    shell: /sbin/nologin
+    group: loki
+
+- name: Loki Verzeichnisse anlegen
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: loki
+    group: loki
+    mode: '0755'
+  loop:
+    - /etc/loki
+    - /var/lib/loki
+
+- name: Loki Binärdatei herunterladen
+  ansible.builtin.get_url:
+    url: "https://github.com/grafana/loki/releases/download/v2.9.4/loki-linux-amd64.zip"
+    dest: "/tmp/loki.zip"
+
+- name: Loki entpacken
+  ansible.builtin.unarchive:
+    src: "/tmp/loki.zip"
+    dest: "/usr/local/bin/"
+    remote_src: yes
+    creates: "/usr/local/bin/loki-linux-amd64"
+
+- name: Loki umbenennen
+  ansible.builtin.command:
+    cmd: mv /usr/local/bin/loki-linux-amd64 /usr/local/bin/loki
+    creates: /usr/local/bin/loki
+
+- name: Loki Grundkonfiguration erstellen
+  ansible.builtin.copy:
+    dest: /etc/loki/loki.yaml
+    content: |
+      auth_enabled: false
+      server:
+        http_listen_port: 3100
+      common:
+        path_prefix: /var/lib/loki
+        storage:
+          filesystem:
+            chunks_directory: /var/lib/loki/chunks
+            rules_directory: /var/lib/loki/rules
+        replication_factor: 1
+        ring:
+          kvstore:
+            store: inmemory
+      schema_config:
+        configs:
+          - from: 2020-10-24
+            store: boltdb-shipper
+            object_store: filesystem
+            schema: v11
+      ruler:
+        alertmanager_url: http://localhost:9093
+    owner: loki
+    group: loki
+
+- name: Loki Systemd-Service einrichten
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/loki.service
+    content: |
+      [Unit]
+      Description=Loki Log Aggregator
+      After=network.target
+
+      [Service]
+      User=loki
+      ExecStart=/usr/local/bin/loki -config.file=/etc/loki/loki.yaml
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Systemd neu laden und Loki starten
+  ansible.builtin.systemd:
+    name: loki
+    state: started
+    enabled: true
+    daemon_reload: true

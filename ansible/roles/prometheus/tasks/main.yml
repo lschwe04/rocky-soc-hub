@@ -1,0 +1,59 @@
+---
+- name: Prometheus Gruppe und Benutzer erstellen
+  ansible.builtin.group:
+    name: prometheus
+    system: true
+- ansible.builtin.user:
+    name: prometheus
+    system: true
+    shell: /sbin/nologin
+    group: prometheus
+
+- name: Prometheus Verzeichnisse erstellen
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+
+- name: Prometheus Konfiguration rendern
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: Restart Prometheus
+
+- name: Systemd Service für Prometheus einrichten
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      User=prometheus
+      Group=prometheus
+      Type=simple
+      ExecStart=/usr/local/bin/prometheus \
+        --config.file=/etc/prometheus/prometheus.yml \
+        --storage.tsdb.path=/var/lib/prometheus/ \
+        --web.console.templates=/etc/prometheus/consoles \
+        --web.console.libraries=/etc/prometheus/console_libraries
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Reload systemd
+
+- name: Prometheus aktivieren und starten
+  ansible.builtin.systemd:
+    name: prometheus
+    enabled: true
+    state: started

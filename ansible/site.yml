@@ -1,0 +1,8 @@
+---
+- hosts: soc_hub
+  become: true
+  roles:
+    - common
+    - prometheus
+    - loki
+    - grafana

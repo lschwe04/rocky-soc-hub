@@ -1,0 +1,39 @@
+---
+- name: Grafana Repository Repository-Key hinzufügen
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://apt.grafana.com/gpg.key
+
+- name: Grafana YUM Repository einrichten
+  ansible.builtin.yum_repository:
+    name: grafana
+    description: Grafana Enterprise Repository
+    baseurl: https://rpm.grafana.com
+    gpgcheck: yes
+    gpgkey: https://apt.grafana.com/gpg.key
+    enabled: yes
+
+- name: Grafana installieren
+  ansible.builtin.dnf:
+    name: grafana
+    state: present
+
+- name: Grafana Service starten und aktivieren
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+
+- name: Grafana Provisioning Verzeichnis erstellen
+  ansible.builtin.file:
+    path: /etc/grafana/provisioning/{{ item }}
+    state: directory
+  loop:
+    - datasources
+    - dashboards
+
+- name: Datasource Konfiguration kopieren
+  ansible.builtin.copy:
+    src: datasources.yml
+    dest: /etc/grafana/provisioning/datasources/datasources.yml
+    notify: Restart Grafana

@@ -1,0 +1,16 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfstate.d/
+.terraform.lock.hcl
+infrastructure/terraform/terraform.tfvars
+
+# Ansible
+ansible/.vault_pass.txt
+*.retry
+
+# OS Files
+.DS_Store
+Thumbs.db

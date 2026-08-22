@@ -1,0 +1,32 @@
+---
+- name: System aktualisieren
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+    update_cache: true
+
+- name: Wichtige Basistools installieren
+  ansible.builtin.dnf:
+    name:
+      - curl
+      - git
+      - firewalld
+      - unzip
+    state: present
+
+- name: Firewalld starten und aktivieren
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Firewall Regeln für Monitoring öffnen
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - 9090/tcp  # Prometheus
+    - 3100/tcp  # Loki
+    - 3000/tcp  # Grafana UI
