@@ -6,3 +6,5 @@
     - prometheus
     - loki
     - grafana
+    - compliance_audit
+

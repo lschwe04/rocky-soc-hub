@@ -1,27 +1,31 @@
 ---
-- name: Prüfe ob SSH PermitRootLogin auf 'no' oder 'prohibit-password' steht (CIS Standard)
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^PermitRootLogin'
-    state: absent
-  check_mode: yes
-  changed_when: false
-  register: ssh_root_check
+- name: OpenSCAP Scanner und Security-Guide-Pakete installieren
+  ansible.builtin.dnf:
+    name:
+      - scap-security-guide
+      - openscap-scanner
+    state: present
 
-- name: Warnung loggen bei Security-Drift (Root Login erlaubt!)
-  ansible.builtin.debug:
-    msg: "SICHERHEITS-WARNUNG: PermitRootLogin entspricht nicht den CIS-Standards!"
-  when: ssh_root_check.found == 0
-
-- name: Sicherstellen dass Auditd (Logging-Dienst) aktiv und aktiviert ist
-  ansible.builtin.systemd:
-    name: auditd
-    state: started
-    enabled: true
-
-- name: Prüfe kritische Dateiberechtigungen (z.B. /etc/passwd)
+- name: Verzeichnis für Compliance-Berichte erstellen
   ansible.builtin.file:
-    path: /etc/passwd
-    mode: '0644'
+    path: /var/log/compliance
+    state: directory
     owner: root
     group: root
+    mode: '0750'
+
+- name: OpenSCAP CIS-Compliance-Scan ausführen
+  ansible.builtin.command:
+    cmd: >
+      oscap xccdf eval 
+      --profile xccdf_org.ssgproject.content_profile_cis 
+      --results /var/log/compliance/oscap-results.xml 
+      --report /var/log/compliance/oscap-report.html 
+      /usr/share/xml/scap/ssg/content/ssg-rocky9-ds.xml
+  register: oscap_scan
+  failed_when: oscap_scan.rc > 2
+  changed_when: false
+
+- name: Zusammenfassung des Compliance-Scans im Log ausgeben
+  ansible.builtin.debug:
+    msg: "OpenSCAP Audit auf dem SOC-Hub abgeschlossen. HTML-Report liegt unter /var/log/compliance/oscap-report.html bereit."
