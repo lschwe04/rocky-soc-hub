@@ -2,6 +2,10 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# NEU: Einbindung der Alert-Rules
+rule_files:
+  - '/etc/prometheus/alert_rules.yml'
+
 scrape_configs:
   - job_name: 'soc-hub-self'
     static_configs:
@@ -9,4 +13,4 @@ scrape_configs:
 
   - job_name: 'rocky-immutable-backup-lab'
     static_configs:
-      - targets: ['{{ backup_lab_ip }}:9100'] # KORRIGIERT: Port 9100
+      - targets: ['{{ backup_lab_ip }}:9100']

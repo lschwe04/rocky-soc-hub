@@ -12,6 +12,7 @@
       - git
       - firewalld
       - unzip
+      - auditd
     state: present
 
 - name: Firewalld starten und aktivieren
@@ -20,13 +21,39 @@
     state: started
     enabled: true
 
-- name: Firewall Regeln für Monitoring öffnen
-  ansible.posix.firewalld:
-    port: "{{ item }}"
-    permanent: true
-    state: enabled
-    immediate: true
+# --- CIS HARDENING ERWEITERUNGEN (Punkt 3) ---
+
+- name: SSH Root-Login absichern (PermitRootLogin prohibit-password)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin prohibit-password'
+    state: present
+  notify: restart sshd
+
+- name: SSH Password Authentication deaktivieren (Key-only)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  notify: restart sshd
+
+- name: Sichere Sysctl-Netzwerkparameter setzen (IP Spoofing & SYN-Flood Schutz)
+  ansible.builtin.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    state: present
+    reload: true
   loop:
-    - 9090/tcp  # Prometheus
-    - 3100/tcp  # Loki
-    - 3000/tcp  # Grafana UI
+    - { key: 'net.ipv4.conf.all.rp_filter', value: '1' }
+    - { key: 'net.ipv4.tcp_syncookies', value: '1' }
+    - { key: 'net.ipv4.conf.all.accept_source_route', value: '0' }
+    - { key: 'net.ipv4.conf.all.accept_redirects', value: '0' }
+
+- name: Auditd Dienst aktivieren und starten
+  ansible.builtin.systemd:
+    name: auditd
+    state: started
+    enabled: true

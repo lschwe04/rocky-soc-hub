@@ -1,24 +1,17 @@
-variable "backup_lab_ip" {
-  type        = string
-  default     = "203.0.113.50" # Ersetze dies mit der echten IP deines Backup-Labs
-  description = "IP-Adresse des Backup-Labs für Prometheus-Scraping und Loki-Push"
-}
-
 resource "hcloud_firewall" "soc_hub_fw" {
   name = "soc-hub-firewall"
   
-  # Grafana UI Zugriff (Dashboard im Browser)
+  # NEU: Grafana UI Zugriff NUR über WireGuard VPN (Sicherheitsaspekt aus Punkt 2)
   rule {
     direction  = "in"
     protocol   = "tcp"
     port       = "3000"
     source_ips = [
-      "0.0.0.0/0",
-      "::/0"
+      var.wireguard_subnet
     ]
   }
 
-  # Prometheus Node Exporter Abruf (Vom Backup-Lab zum SOC-Hub / oder umgekehrt je nach Topologie)
+  # Prometheus Node Exporter Abruf vom Backup-Lab
   rule {
     direction  = "in"
     protocol   = "tcp"
@@ -28,7 +21,7 @@ resource "hcloud_firewall" "soc_hub_fw" {
     ]
   }
 
-  # Loki Log-Push (Erlaubt dem Backup-Lab, Logs AN den SOC-Hub zu senden)
+  # Loki Log-Push vom Backup-Lab
   rule {
     direction  = "in"
     protocol   = "tcp"

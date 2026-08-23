@@ -1,0 +1,20 @@
+groups:
+  - name: backup_alerts
+    rules:
+      - alert: BackupTargetDown
+        expr: up{job="rocky-immutable-backup-lab"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backup-Lab Server ist nicht erreichbar!"
+          description: "Der Prometheus-Scrape für das Backup-Lab schlägt seit über 5 Minuten fehl."
+
+      - alert: ResticBackupStale
+        expr: time() - restic_last_backup_timestamp > 86400
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kein erfolgreiches Backup in den letzten 24 Stunden!"
+          description: "Der Zeitstempel des letzten Restic-Backups ist älter als 24 Stunden."
