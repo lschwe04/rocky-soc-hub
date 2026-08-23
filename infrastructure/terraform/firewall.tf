@@ -1,14 +1,30 @@
+variable "backup_lab_ip" {
+  type        = string
+  default     = "203.0.113.50" # Ersetze dies mit der echten IP deines Backup-Labs
+  description = "IP-Adresse des Backup-Labs für Prometheus-Scraping und Loki-Push"
+}
+
 resource "hcloud_firewall" "soc_hub_fw" {
   name = "soc-hub-firewall"
   
-  # Grafana UI Zugriff (Damit du das Dashboard im Browser siehst)
+  # Grafana UI Zugriff (Dashboard im Browser)
   rule {
     direction  = "in"
     protocol   = "tcp"
     port       = "3000"
     source_ips = [
-      "0.0.0.0/0", # Oder im Idealfall nur deine aktuelle Heim-/Büro-IP!
+      "0.0.0.0/0",
       "::/0"
+    ]
+  }
+
+  # Prometheus Node Exporter Abruf (Vom Backup-Lab zum SOC-Hub / oder umgekehrt je nach Topologie)
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "9100"
+    source_ips = [
+      "${var.backup_lab_ip}/32"
     ]
   }
 
@@ -18,7 +34,7 @@ resource "hcloud_firewall" "soc_hub_fw" {
     protocol   = "tcp"
     port       = "3100"
     source_ips = [
-      "<DEINE_BACKUP_LAB_IP>/32" # WICHTIG: Hier die ECHTE IP des Backup-Servers eintragen!
+      "${var.backup_lab_ip}/32"
     ]
   }
 }

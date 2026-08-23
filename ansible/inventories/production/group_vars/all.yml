@@ -1,5 +1,5 @@
 ---
 ansible_python_interpreter: /usr/bin/python3
 
-# IP-Adresse oder Hostname deines alten rocky-immutable-backup-lab Servers
+# Hier die echte IP-Adresse deines alten rocky-immutable-backup-lab Servers eintragen
 backup_lab_ip: "DEINE_BACKUP_LAB_IP"
