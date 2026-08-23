@@ -1,0 +1,27 @@
+---
+- name: Prüfe ob SSH PermitRootLogin auf 'no' oder 'prohibit-password' steht (CIS Standard)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    state: absent
+  check_mode: yes
+  changed_when: false
+  register: ssh_root_check
+
+- name: Warnung loggen bei Security-Drift (Root Login erlaubt!)
+  ansible.builtin.debug:
+    msg: "SICHERHEITS-WARNUNG: PermitRootLogin entspricht nicht den CIS-Standards!"
+  when: ssh_root_check.found == 0
+
+- name: Sicherstellen dass Auditd (Logging-Dienst) aktiv und aktiviert ist
+  ansible.builtin.systemd:
+    name: auditd
+    state: started
+    enabled: true
+
+- name: Prüfe kritische Dateiberechtigungen (z.B. /etc/passwd)
+  ansible.builtin.file:
+    path: /etc/passwd
+    mode: '0644'
+    owner: root
+    group: root

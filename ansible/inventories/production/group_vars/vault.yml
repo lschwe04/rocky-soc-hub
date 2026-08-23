@@ -1,0 +1,4 @@
+---
+# Verschlüsselte Secrets für das SOC-Hub
+vault_hetzner_api_token: "hcloud_secret_token_placeholder_change_me"
+vault_alertmanager_webhook_url: "https://discord.com/api/webhooks/your_webhook_id_here"

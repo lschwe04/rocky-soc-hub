@@ -1,5 +1,6 @@
 ---
-ansible_python_interpreter: /usr/bin/python3
-
-# Hier die echte IP-Adresse deines alten rocky-immutable-backup-lab Servers eintragen
-backup_lab_ip: "DEINE_BACKUP_LAB_IP"
+# Unkritische globale Variablen
+environment_name: "production"
+wireguard_subnet: "10.100.0.0/24"
+soc_hub_ip: "192.168.1.100" # Wird dynamisch vom Master-Skript überschrieben
+backup_lab_ip: "192.168.1.200"
