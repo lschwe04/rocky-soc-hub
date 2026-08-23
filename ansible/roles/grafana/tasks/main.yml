@@ -1,39 +1,40 @@
 ---
-- name: Grafana Repository Repository-Key hinzufügen
-  ansible.builtin.rpm_key:
-    state: present
-    key: https://apt.grafana.com/gpg.key
-
-- name: Grafana YUM Repository einrichten
-  ansible.builtin.yum_repository:
-    name: grafana
-    description: Grafana Enterprise Repository
-    baseurl: https://rpm.grafana.com
-    gpgcheck: yes
-    gpgkey: https://apt.grafana.com/gpg.key
-    enabled: yes
-
-- name: Grafana installieren
-  ansible.builtin.dnf:
-    name: grafana
-    state: present
-
-- name: Grafana Service starten und aktivieren
-  ansible.builtin.systemd:
-    name: grafana-server
-    enabled: true
-    state: started
-
-- name: Grafana Provisioning Verzeichnis erstellen
-  ansible.builtin.file:
-    path: /etc/grafana/provisioning/{{ item }}
+- name: Create Grafana dashboard directory
+  file:
+    path: /etc/grafana/provisioning/dashboards
     state: directory
-  loop:
-    - datasources
-    - dashboards
+    owner: root
+    group: grafana
+    mode: '0750'
 
-- name: Datasource Konfiguration kopieren
-  ansible.builtin.copy:
-    src: datasources.yml
-    dest: /etc/grafana/provisioning/datasources/datasources.yml
-    notify: Restart Grafana
+- name: Copy provisioning configuration for dashboards
+  copy:
+    content: |
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /etc/grafana/dashboards
+    dest: /etc/grafana/provisioning/dashboards/dashboard.yaml
+
+- name: Ensure target dashboard folder exists
+  file:
+    path: /etc/grafana/dashboards
+    state: directory
+    owner: root
+    group: grafana
+    mode: '0750'
+
+- name: Copy SOC Dashboard JSON to Grafana
+  copy:
+    src: dashboards/soc-overview.json
+    dest: /etc/grafana/dashboards/soc-overview.json
+    owner: root
+    group: grafana
+    mode: '0640'
+  notify: restart grafana
