@@ -62,8 +62,12 @@
             store: boltdb-shipper
             object_store: filesystem
             schema: v11
-      ruler:
-        alertmanager_url: http://localhost:9093
+      limits_config:
+        retention_period: 30d # NEU
+      compactor:
+        working_directory: /var/lib/loki/compactor
+        shared_store: filesystem
+        retention_enabled: true # NEU
     owner: loki
     group: loki
 

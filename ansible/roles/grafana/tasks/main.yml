@@ -1,4 +1,28 @@
 ---
+
+- name: Grafana RPM Key importieren
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://rpm.grafana.com/gpg.key
+
+- name: Grafana Repository hinzufügen
+  ansible.builtin.yum_repository:
+    name: grafana
+    description: Grafana Repository
+    baseurl: https://rpm.grafana.com
+    gpgcheck: yes
+
+- name: Grafana installieren
+  ansible.builtin.dnf:
+    name: grafana
+    state: present
+
+- name: Grafana Dienst starten und aktivieren
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: started
+    enabled: true
+
 - name: Create Grafana dashboard directory
   file:
     path: /etc/grafana/provisioning/dashboards

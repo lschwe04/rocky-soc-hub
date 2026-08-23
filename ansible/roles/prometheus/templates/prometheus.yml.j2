@@ -9,4 +9,4 @@ scrape_configs:
 
   - job_name: 'rocky-immutable-backup-lab'
     static_configs:
-      - targets: ['{{ backup_lab_ip }}:9090']
+      - targets: ['{{ backup_lab_ip }}:9100'] # KORRIGIERT: Port 9100

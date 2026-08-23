@@ -9,6 +9,44 @@
     shell: /sbin/nologin
     group: prometheus
 
+- name: Prometheus herunterladen und entpacken
+  ansible.builtin.unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz"
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: Prometheus Binärdateien verschieben
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-2.53.0.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: '0755'
+    remote_src: yes
+  loop:
+    - prometheus
+    - promtool
+
+- name: Systemd Service für Prometheus einrichten
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      User=prometheus
+      Group=prometheus
+      Type=simple
+      ExecStart=/usr/local/bin/prometheus \
+        --config.file=/etc/prometheus/prometheus.yml \
+        --storage.tsdb.path=/var/lib/prometheus/ \
+        --storage.tsdb.retention.time=30d 
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Reload systemd
+
 - name: Prometheus Verzeichnisse erstellen
   ansible.builtin.file:
     path: "{{ item }}"
