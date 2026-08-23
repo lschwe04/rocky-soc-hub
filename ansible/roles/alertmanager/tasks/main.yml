@@ -1,0 +1,75 @@
+---
+- name: Alertmanager Gruppe erstellen
+  ansible.builtin.group:
+    name: alertmanager
+    system: true
+
+- name: Alertmanager Benutzer erstellen
+  ansible.builtin.user:
+    name: alertmanager
+    system: true
+    shell: /sbin/nologin
+    group: alertmanager
+
+- name: Alertmanager herunterladen und entpacken
+  ansible.builtin.unarchive:
+    src: "https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz"
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: Alertmanager Binärdateien verschieben
+  ansible.builtin.copy:
+    src: "/tmp/alertmanager-0.27.0.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: '0755'
+    remote_src: yes
+  loop:
+    - alertmanager
+    - amtool
+
+- name: Alertmanager Verzeichnisse erstellen
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+  loop:
+    - /etc/alertmanager
+    - /var/lib/alertmanager
+
+- name: Alertmanager Konfiguration rendern
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: alertmanager
+    group: alertmanager
+    mode: '0644'
+  notify: Restart Alertmanager
+
+- name: Systemd Service für Alertmanager einrichten
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alertmanager.service
+    content: |
+      [Unit]
+      Description=Alertmanager
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      User=alertmanager
+      Group=alertmanager
+      Type=simple
+      ExecStart=/usr/local/bin/alertmanager \
+        --config.file=/etc/alertmanager/alertmanager.yml \
+        --storage.path=/var/lib/alertmanager/
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Reload systemd
+
+- name: Alertmanager aktivieren und starten
+  ansible.builtin.systemd:
+    name: alertmanager
+    enabled: true
+    state: started
