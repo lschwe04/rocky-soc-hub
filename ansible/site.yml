@@ -7,4 +7,5 @@
     - loki
     - grafana
     - compliance_audit
+    - wireguard
 
