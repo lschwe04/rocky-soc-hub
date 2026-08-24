@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
   # Ansible Provisionierung direkt in Vagrant integrieren
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "ansible/site.yml"
-    ansible.inventory_path = "ansible/inventory/hosts.local.ini"
+    ansible.inventory_path = "ansible/inventories/hosts.local.ini" # Korrigiert: "inventories" im Pfad
     ansible.ask_vault_pass = true # Falls du vault.yml noch nutzt
   end
 end
