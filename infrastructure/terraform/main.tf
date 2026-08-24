@@ -24,6 +24,14 @@ resource "hcloud_firewall" "soc_hub_fw" {
     source_ips = ["0.0.0.0/0", "::/0"]
   }
 
+# --- NEU: WireGuard VPN Port für die Nodes ---
+  rule {
+    direction  = "in"
+    protocol   = "udp"
+    port       = "51820"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+
   # Grafana UI: NUR über das WireGuard VPN Subnetz erlaubt!
   rule {
     direction  = "in"
