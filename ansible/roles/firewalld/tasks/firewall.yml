@@ -1,0 +1,24 @@
+# ansible/roles/security/tasks/firewall.yml
+---
+- name: firewalld installieren und aktivieren
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+
+- name: firewalld Service starten
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Benötigte Ports freigeben (Grafana, SSH, Loki, Prometheus)
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+    - 22/tcp   # SSH
+    - 3000/tcp # Grafana
+    - 3100/tcp # Loki (für Clients)
+    - 9090/tcp # Prometheus (intern)
