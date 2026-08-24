@@ -1,4 +1,4 @@
 ---
-# Verschlüsselte Secrets für das SOC-Hub
-vault_hetzner_api_token: "hcloud_secret_token_placeholder_change_me"
-vault_alertmanager_webhook_url: "https://discord.com/api/webhooks/your_webhook_id_here"
+vault_hetzner_api_token: "DEIN_ECHTER_HETZNER_API_TOKEN"
+vault_grafana_admin_password: "EIN_SICHERES_PASSWORT"
+vault_alertmanager_webhook: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
