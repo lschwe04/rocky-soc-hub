@@ -3,17 +3,16 @@
   ansible.builtin.copy:
     dest: /etc/loki/loki.yaml
     content: |
-      auth_enabled: false
+      auth_enabled: true
       server:
         http_listen_port: 3100
+        grpc_listen_port: 9096
       common:
         path_prefix: /var/lib/loki
         replication_factor: 1
         ring:
           kvstore:
             store: inmemory
-
-      # FIX: Migration auf Schema v13 (TSDB) mit S3 Object Storage
       schema_config:
         configs:
           - from: 2024-01-01
@@ -23,7 +22,6 @@
             index:
               prefix: index_
               period: 24h
-
       storage_config:
         aws:
           bucketnames: soc-loki-archive
@@ -34,14 +32,15 @@
         tsdb_shipper:
           active_index_directory: /var/lib/loki/tsdb-index
           cache_location: /var/lib/loki/tsdb-cache
-
       limits_config:
         retention_period: 30d
-
+        enforce_metric_name: false
+        reject_old_samples: true
+        reject_old_samples_max_age: 168h
       compactor:
         working_directory: /var/lib/loki/compactor
         shared_store: s3
         retention_enabled: true
     owner: loki
     group: loki
-    mode: '0644'
+    mode: '0640'
