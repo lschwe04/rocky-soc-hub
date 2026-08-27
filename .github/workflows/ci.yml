@@ -1,4 +1,4 @@
-name: CI Pipeline - SOC Hub
+name: Enterprise CI Pipeline - SOC Hub
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  infrastructure-lint:
+  infrastructure-security:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -21,8 +21,6 @@ jobs:
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v3
-        with:
-          tflint_version: latest
 
       - name: TFLint Check
         run: |
@@ -30,7 +28,14 @@ jobs:
           tflint --init
           tflint
 
-  ansible-lint:
+      # FIX: SAST Security Scanner für Terraform IaC hinzugefügt
+      - name: Bridgecrew Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infrastructure/terraform
+          framework: terraform
+
+  ansible-security:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -41,10 +46,11 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Ansible-Lint
+      # FIX: Molecule Integration für vollautomatisierte Role-Tests vorbereitet
+      - name: Install Ansible-Lint and Molecule
         run: |
           python -m pip install --upgrade pip
-          pip install ansible-lint
+          pip install ansible-lint molecule molecule-plugins[docker]
 
       - name: Run Ansible Lint
         run: ansible-lint ansible/site.yml
