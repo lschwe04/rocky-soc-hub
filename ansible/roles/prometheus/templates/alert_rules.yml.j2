@@ -23,18 +23,18 @@ groups:
     rules:
       - alert: LokiDown
         expr: up{job="loki-health"} == 0
-        for: 3m
+        for: 2m
         labels:
           severity: critical
         annotations:
           summary: "Loki Log-Aggregator ist offline!"
-          description: "Prometheus kann Loki nicht mehr lokal erreichen."
-          
+          description: "Prometheus kann den lokalen Loki-Dienst nicht erreichen. Log-Ingestion ist unterbrochen."
+
       - alert: PromtailNodeDown
         expr: up{job="promtail-health"} == 0
-        for: 5m
+        for: 3m
         labels:
-          severity: warning
+          severity: high
         annotations:
-          summary: "Promtail sendet keine Telemetrie!"
-          description: "Der Promtail-Agent auf dem Node 10.100.0.2 antwortet nicht mehr."
+          summary: "Promtail-Agent auf Node offline!"
+          description: "Der Promtail-Log-Collector auf Node 10.100.0.2 ist nicht erreichbar."

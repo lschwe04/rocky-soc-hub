@@ -13,7 +13,7 @@
 
 - name: Prometheus herunterladen und entpacken
   ansible.builtin.unarchive:
-    src: "[https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz](https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz)"
+    src: "https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz"
     dest: "/tmp/"
     remote_src: yes
 
@@ -56,12 +56,12 @@
     mode: '0644'
   notify: Restart Prometheus
 
-- name: Systemd Service für Prometheus einrichten
+- name: Systemd Service für Prometheus einrichten (Hardened Sandbox)
   ansible.builtin.copy:
     dest: /etc/systemd/system/prometheus.service
     content: |
       [Unit]
-      Description=Prometheus
+      Description=Prometheus Monitoring Engine
       Wants=network-online.target
       After=network-online.target
 
@@ -75,8 +75,10 @@
         --storage.tsdb.retention.time=30d \
         --web.console.templates=/etc/prometheus/consoles \
         --web.console.libraries=/etc/prometheus/console_libraries
+      Restart=always
+      RestartSec=5s
       
-      # Enterprise Hardening
+      # Enterprise Sandbox Hardening
       ProtectSystem=strict
       ProtectHome=yes
       PrivateTmp=yes
@@ -86,10 +88,19 @@
       ProtectControlGroups=yes
       RestrictRealtime=yes
       MemoryDenyWriteExecute=yes
+      CapabilityBoundingSet=
+      PrivateDevices=yes
+      ProtectClock=yes
+      ProtectHostname=yes
+      ProtectKernelLogs=yes
+      LockPersonality=yes
+      RestrictNamespaces=yes
+      RestrictSUIDSGID=yes
       ReadWritePaths=/var/lib/prometheus
 
       [Install]
       WantedBy=multi-user.target
+    mode: '0644'
   notify: Reload systemd
 
 - name: Prometheus aktivieren und starten

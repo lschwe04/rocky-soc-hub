@@ -1,6 +1,7 @@
 ---
-vault_hetzner_api_token: "DEIN_ECHTER_HETZNER_API_TOKEN"
-vault_grafana_admin_password: "EIN_SICHERES_PASSWORT"
-vault_alertmanager_webhook: "[https://hooks.slack.com/services/XXX/YYY/ZZZ](https://hooks.slack.com/services/XXX/YYY/ZZZ)"
+# Sensible Produktions-Secrets (Verschlüsseln mit: ansible-vault encrypt)
+vault_hetzner_api_token: "hcloud_live_token_change_me_in_vault"
+vault_grafana_admin_password: "SuperSecureAdminPassword2026!"
+vault_alertmanager_webhook: "http://127.0.0.1:5001/webhook"
 vault_wg_hub_privkey: "aHDTW1eSrYLLRKkacjqqDSGxjsC242wUm1I1J63tFGU="
 vault_node_public_key: "pPVhqlJ3iINNl0lzZ/EBI8HC/Mm7jvYzuqIN7v8GWQg="
