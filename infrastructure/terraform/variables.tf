@@ -21,7 +21,12 @@ variable "ssh_key_name" {
   description = "Name des hinterlegten SSH-Keys in Hetzner"
 }
 
-# --- NEU: Für WireGuard- & Backup-Lab-Anbindung ---
+# FIX: Explizite IP-Einschränkung für SSH-Zugriffe via Bastion/Corporate-VPN
+variable "corporate_bastion_ip" {
+  type        = string
+  description = "Öffentliche CIDR-Adresse der Bastion/Corporate-VPN für SSH-Zugriffe (z.B. 198.51.100.5/32)"
+}
+
 variable "backup_lab_ip" {
   type        = string
   default     = "203.0.113.50"
@@ -30,6 +35,6 @@ variable "backup_lab_ip" {
 
 variable "wireguard_subnet" {
   type        = string
-  default     = "10.10.0.0/24" # Passe dies an dein echtes WireGuard-Netz an
+  default     = "10.100.0.0/24"
   description = "WireGuard VPN Subnet für sicheren Dashboard-Zugriff"
 }

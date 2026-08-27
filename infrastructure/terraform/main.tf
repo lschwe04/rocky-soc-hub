@@ -6,7 +6,8 @@ terraform {
       version = "~> 1.45.0"
     }
   }
-  # FIX: S3 Backend Integration für sicheres Remote State-Management und Locking
+
+  # FIX: S3 Backend Integration mit State Locking via DynamoDB und Verschlüsselung
   backend "s3" {
     bucket         = "soc-terraform-state-prod"
     key            = "hub/terraform.tfstate"
@@ -23,7 +24,7 @@ provider "hcloud" {
 resource "hcloud_firewall" "soc_hub_fw" {
   name = "soc-hub-firewall"
 
-  # FIX: SSH Management limitiert auf statische Corporate-VPN/Bastion-IP
+  # FIX: SSH Management-Zugriff streng auf Bastion/Corporate-IP limitiert (0.0.0.0/0 entfernt)
   rule {
     direction  = "in"
     protocol   = "tcp"

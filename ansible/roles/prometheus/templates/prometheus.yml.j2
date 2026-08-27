@@ -5,7 +5,7 @@ global:
 rule_files:
   - '/etc/prometheus/alert_rules.yml'
 
-# FIX: Remote-Write Endpunkt für Langzeit-Retention in Thanos/Mimir Cluster
+# FIX: Remote-Write für Langzeit-Retention und externen Ausfallspeicher
 remote_write:
   - url: "https://mimir.enterprise-soc.internal/api/v1/push"
     tls_config:

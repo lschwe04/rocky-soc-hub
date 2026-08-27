@@ -1,3 +1,4 @@
+---
 - name: Loki Grundkonfiguration erstellen
   ansible.builtin.copy:
     dest: /etc/loki/loki.yaml
@@ -11,7 +12,8 @@
         ring:
           kvstore:
             store: inmemory
-      # FIX: Migration auf Schema v13 (TSDB) mit AWS S3 Storage anstelle lokaler boltdb
+
+      # FIX: Migration auf Schema v13 (TSDB) mit S3 Object Storage
       schema_config:
         configs:
           - from: 2024-01-01
@@ -21,6 +23,7 @@
             index:
               prefix: index_
               period: 24h
+
       storage_config:
         aws:
           bucketnames: soc-loki-archive
@@ -31,8 +34,10 @@
         tsdb_shipper:
           active_index_directory: /var/lib/loki/tsdb-index
           cache_location: /var/lib/loki/tsdb-cache
+
       limits_config:
         retention_period: 30d
+
       compactor:
         working_directory: /var/lib/loki/compactor
         shared_store: s3
