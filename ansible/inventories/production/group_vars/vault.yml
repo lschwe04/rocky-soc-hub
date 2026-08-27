@@ -1,4 +1,6 @@
 ---
 vault_hetzner_api_token: "DEIN_ECHTER_HETZNER_API_TOKEN"
 vault_grafana_admin_password: "EIN_SICHERES_PASSWORT"
-vault_alertmanager_webhook: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
+vault_alertmanager_webhook: "[https://hooks.slack.com/services/XXX/YYY/ZZZ](https://hooks.slack.com/services/XXX/YYY/ZZZ)"
+vault_wg_hub_privkey: "aHDTW1eSrYLLRKkacjqqDSGxjsC242wUm1I1J63tFGU="
+vault_node_public_key: "pPVhqlJ3iINNl0lzZ/EBI8HC/Mm7jvYzuqIN7v8GWQg="

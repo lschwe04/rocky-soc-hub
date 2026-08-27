@@ -2,8 +2,9 @@
 # Unkritische globale Variablen
 environment_name: "production"
 wireguard_subnet: "10.100.0.0/24"
-soc_hub_ip: "192.168.1.100" # Wird dynamisch vom Master-Skript überschrieben
+soc_hub_ip: "192.168.1.100"
 backup_lab_ip: "192.168.56.50"
-# WireGuard Schlüssel für den Hub
-wg_hub_privkey: "aHDTW1eSrYLLRKkacjqqDSGxjsC242wUm1I1J63tFGU="
-node_public_key: "pPVhqlJ3iINNl0lzZ/EBI8HC/Mm7jvYzuqIN7v8GWQg="
+
+# Enterprise Secrets Management: Striktes Environment-Lookup zur Laufzeit (Keine Plaintext-Keys im Git!)
+wg_hub_privkey: "{{ lookup('env', 'WG_HUB_PRIVKEY') }}"
+node_public_key: "{{ lookup('env', 'NODE_PUBLIC_KEY') }}"

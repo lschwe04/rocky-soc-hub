@@ -13,7 +13,7 @@
 
 - name: Prometheus herunterladen und entpacken
   ansible.builtin.unarchive:
-    src: "https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz"
+    src: "[https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz](https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz)"
     dest: "/tmp/"
     remote_src: yes
 
@@ -75,6 +75,18 @@
         --storage.tsdb.retention.time=30d \
         --web.console.templates=/etc/prometheus/consoles \
         --web.console.libraries=/etc/prometheus/console_libraries
+      
+      # Enterprise Hardening
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+      NoNewPrivileges=yes
+      ProtectKernelTunables=yes
+      ProtectKernelModules=yes
+      ProtectControlGroups=yes
+      RestrictRealtime=yes
+      MemoryDenyWriteExecute=yes
+      ReadWritePaths=/var/lib/prometheus
 
       [Install]
       WantedBy=multi-user.target

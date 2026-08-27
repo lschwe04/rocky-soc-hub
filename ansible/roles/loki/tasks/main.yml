@@ -21,10 +21,13 @@
   loop:
     - /etc/loki
     - /var/lib/loki
+    - /var/lib/loki/chunks
+    - /var/lib/loki/rules
+    - /var/lib/loki/compactor
 
 - name: Loki Binärdatei herunterladen
   ansible.builtin.get_url:
-    url: "https://github.com/grafana/loki/releases/download/v2.9.4/loki-linux-amd64.zip"
+    url: "[https://github.com/grafana/loki/releases/download/v2.9.4/loki-linux-amd64.zip](https://github.com/grafana/loki/releases/download/v2.9.4/loki-linux-amd64.zip)"
     dest: "/tmp/loki.zip"
 
 - name: Loki entpacken
@@ -38,6 +41,13 @@
   ansible.builtin.command:
     cmd: mv /usr/local/bin/loki-linux-amd64 /usr/local/bin/loki
     creates: /usr/local/bin/loki
+
+- name: Set permissions for Loki binary
+  ansible.builtin.file:
+    path: /usr/local/bin/loki
+    mode: '0755'
+    owner: root
+    group: root
 
 - name: Loki Grundkonfiguration erstellen
   ansible.builtin.copy:
@@ -63,11 +73,11 @@
             object_store: filesystem
             schema: v11
       limits_config:
-        retention_period: 30d # NEU
+        retention_period: 30d
       compactor:
         working_directory: /var/lib/loki/compactor
         shared_store: filesystem
-        retention_enabled: true # NEU
+        retention_enabled: true
     owner: loki
     group: loki
 
@@ -84,8 +94,21 @@
       ExecStart=/usr/local/bin/loki -config.file=/etc/loki/loki.yaml
       Restart=always
 
+      # Enterprise Hardening
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+      NoNewPrivileges=yes
+      ProtectKernelTunables=yes
+      ProtectKernelModules=yes
+      ProtectControlGroups=yes
+      RestrictRealtime=yes
+      MemoryDenyWriteExecute=yes
+      ReadWritePaths=/var/lib/loki
+
       [Install]
       WantedBy=multi-user.target
+    mode: '0644'
 
 - name: Systemd neu laden und Loki starten
   ansible.builtin.systemd:

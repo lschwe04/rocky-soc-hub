@@ -33,7 +33,7 @@
     state: directory
     owner: alertmanager
     group: alertmanager
-    mode: '0755'
+    mode: '0750'
   loop:
     - /etc/alertmanager
     - /var/lib/alertmanager
@@ -44,10 +44,10 @@
     dest: /etc/alertmanager/alertmanager.yml
     owner: alertmanager
     group: alertmanager
-    mode: '0644'
+    mode: '0640'
   notify: Restart Alertmanager
 
-- name: Systemd Service für Alertmanager einrichten
+- name: Enterprise Systemd Hardening für Alertmanager
   ansible.builtin.copy:
     dest: /etc/systemd/system/alertmanager.service
     content: |
@@ -63,6 +63,18 @@
       ExecStart=/usr/local/bin/alertmanager \
         --config.file=/etc/alertmanager/alertmanager.yml \
         --storage.path=/var/lib/alertmanager/
+      
+      # --- Enterprise Hardening ---
+      NoNewPrivileges=true
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=true
+      ProtectKernelTunables=yes
+      ProtectControlGroups=yes
+      RestrictRealtime=yes
+      ProtectKernelModules=yes
+      ReadWritePaths=/var/lib/alertmanager
+      CapabilityBoundingSet=
 
       [Install]
       WantedBy=multi-user.target
