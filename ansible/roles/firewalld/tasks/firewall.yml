@@ -1,4 +1,3 @@
-# ansible/roles/security/tasks/firewall.yml
 ---
 - name: firewalld installieren und aktivieren
   ansible.builtin.dnf:
@@ -11,14 +10,20 @@
     state: started
     enabled: yes
 
-- name: Benötigte Ports freigeben (Grafana, SSH, Loki, Prometheus)
+- name: WireGuard VPN-Tunnel als Trusted deklarieren (Zero-Trust mTLS)
+  ansible.posix.firewalld:
+    zone: trusted
+    interface: wg0
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Benötigte Ports für externes Management freigeben
   ansible.posix.firewalld:
     port: "{{ item }}"
     permanent: yes
     state: enabled
     immediate: yes
   loop:
-    - 22/tcp   # SSH
-    - 3000/tcp # Grafana
-    - 3100/tcp # Loki (für Clients)
-    - 9090/tcp # Prometheus (intern)
+    - 22/tcp   # SSH (eingeschränkt via Terraform)
+    - 3000/tcp # Grafana Web-UI
