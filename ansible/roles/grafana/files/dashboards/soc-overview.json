@@ -24,12 +24,12 @@
       "collapsed": false,
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "id": 2,
-      "title": "Sicherheitsrelevante Logs (Failed Logins)",
+      "title": "Sicherheitsrelevante Logs & Active Responses",
       "type": "logs",
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{host=~\"$host\"} |~ \"Failed password|Invalid user\"",
+          "expr": "{host=~\"$host\"} |~ \"Failed password|Invalid user|Ban|Unban|type=EXECVE\"",
           "refId": "A"
         }
       ]
